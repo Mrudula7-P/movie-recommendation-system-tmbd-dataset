@@ -1,9 +1,15 @@
-<!DOCTYPE html>
-<html lang="en">
-<head>
-    <title>Document</title>
-</head>
-<body>
-    <p>hello</p>
-</body>
-</html>
+# app.py  (Flask)
+from flask import Flask, request, jsonify
+import pickle
+
+app = Flask(__name__)
+movies     = pickle.load(open('models/movie_list.pkl', 'rb'))
+similarity = pickle.load(open('models/similarity.pkl', 'rb'))
+
+@app.route('/recommend')
+def recommend():
+    title = request.args.get('movie')
+    idx   = movies[movies['title'] == title].index[0]
+    dists = sorted(list(enumerate(similarity[idx])), key=lambda x: x[1], reverse=True)
+    recs  = [movies.iloc[i[0]].title for i in dists[1:6]]
+    return jsonify(recs)
